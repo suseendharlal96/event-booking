@@ -23,12 +23,29 @@ const events = async (eventIds) => {
     const events = await Event.find({ _id: { $in: eventIds } });
     return events.map((event) => {
       return {
-        ...event.doc,
+        ...event._doc,
         _id: event.id,
         date: new Date(event._doc.date).toISOString(),
         creator: user.bind(this, event._doc.creator),
       };
     });
+  } catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
+};
+
+const individualEvent = async (eventId) => {
+  try {
+    const event = await Event.findById({ _id: eventId });
+    if (!event) {
+      throw new Error(`Event with ${eventId} not found `);
+    }
+    return {
+      ...event._doc,
+      _id: event.id,
+      creator: user.bind(this, event._doc.creator),
+    };
   } catch (err) {
     console.log(err);
     throw new Error(err);
@@ -57,14 +74,22 @@ module.exports = {
   bookings: async () => {
     try {
       const bookings = await Booking.find();
-      bookings.map((booking) => {
-        return {
-          ...booking._doc,
-          _id: booking.id,
-          createdAt: new Date(booking._doc.createdAt).toISOString(),
-          updatedAt: new Date(booking._doc.updatedAt).toISOString(),
-        };
-      });
+      // console.log(bookings);
+      if (bookings) {
+        return bookings.map((booking) => {
+          console.log(1, booking);
+          return {
+            ...booking._doc,
+            _id: booking._doc._id,
+            user: user.bind(this, booking._doc.user),
+            event: individualEvent.bind(this, booking._doc.event),
+            createdAt: new Date(booking._doc.createdAt).toISOString(),
+            updatedAt: new Date(booking._doc.updatedAt).toISOString(),
+          };
+        });
+      } else {
+        throw new Error("No bookings found");
+      }
     } catch (err) {
       console.log(err);
       throw new Error(err);
@@ -148,9 +173,33 @@ module.exports = {
       return {
         ...result._doc,
         _id: result.id,
+        user: user.bind(this, booking._doc.user),
+        event: individualEvent.bind(this, booking._doc.event),
         createdAt: new Date(result._doc.createdAt).toISOString(),
         updatedAt: new Date(result._doc.updatedAt).toISOString(),
       };
+    } catch (err) {
+      console.log(err);
+      throw new Error(err);
+    }
+  },
+
+  // Cancel a booking
+  cancelBooking: async ({ bookingId }) => {
+    try {
+      const booking = await Booking.findById({ _id: bookingId }).populate(
+        "event"
+      );
+      console.log(2, booking);
+      console.log(3, booking.event._doc);
+      const event = {
+        ...booking.event._doc,
+        _id: booking.event.id,
+        date: new Date(booking.event._doc.date).toISOString(),
+        creator: user.bind(this, booking.event._doc.creator),
+      };
+      await Booking.deleteOne({ _id: bookingId });
+      return event;
     } catch (err) {
       console.log(err);
       throw new Error(err);
