@@ -5,11 +5,15 @@ const mongoose = require("mongoose");
 
 const RootSchema = require("./graphql/schema");
 const RootResolver = require("./graphql/resolvers");
+const isAuth = require("./middleware/auth");
 
 const app = express();
 app.use(bodyParser.json());
 
 const a = "2020-07-03T07:22:42.041Z";
+
+// will check each req wheather authenticated or not
+app.use(isAuth);
 
 app.use(
   "/graphql",

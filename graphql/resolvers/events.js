@@ -16,19 +16,25 @@ exports.EventResolver = {
     }
   },
   // Mutation
-  createEvent: async ({ eventInput: { title, description, price, date } }) => {
+  createEvent: async (
+    { eventInput: { title, description, price, date } },
+    req
+  ) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated to perform this operation");
+    }
     const event = new Event({
       title,
       description,
       price: +price,
       date: new Date(date),
-      creator: "5efde2469e2c761bd8236cfb",
+      creator: req.userId,
     });
     let createdEvent;
     try {
       const result = await event.save();
       createdEvent = transformEvent(result);
-      const existingUser = await User.findById("5efde2469e2c761bd8236cfb");
+      const existingUser = await User.findById(req.userId);
       if (!existingUser) {
         throw new Error("User not found");
       }

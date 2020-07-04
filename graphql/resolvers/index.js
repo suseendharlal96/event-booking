@@ -8,6 +8,8 @@ module.exports = {
   events: EventResolver.events,
   // Get all Bookings
   bookings: BookingResolver.bookings,
+  // Login
+  login: UserResolver.login,
 
   // Mutations
   // Create an Event

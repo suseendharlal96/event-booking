@@ -18,7 +18,10 @@ const individualEvent = async (eventId) => {
 
 exports.BookingResolver = {
   // Query
-  bookings: async () => {
+  bookings: async (_, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated to perform this operation");
+    }
     try {
       const bookings = await Booking.find();
       // console.log(bookings);
@@ -44,8 +47,10 @@ exports.BookingResolver = {
   },
 
   // Mutation
-  bookEvent: async ({ eventId }) => {
-    // console.log(object);
+  bookEvent: async ({ eventId }, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated to perform this operation");
+    }
     try {
       const event = await Event.findById({ _id: eventId });
       console.log("e", event);
@@ -53,7 +58,7 @@ exports.BookingResolver = {
         throw new Error("No event");
       }
       const booking = new Booking({
-        user: "5efde2469e2c761bd8236cfb",
+        user: req.userId,
         event,
       });
       const result = await booking.save();
@@ -71,7 +76,10 @@ exports.BookingResolver = {
     }
   },
 
-  cancelBooking: async ({ bookingId }) => {
+  cancelBooking: async ({ bookingId }, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated to perform this operation");
+    }
     try {
       const booking = await Booking.findById({ _id: bookingId }).populate(
         "event"
