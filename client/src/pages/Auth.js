@@ -20,13 +20,12 @@ const Auth = () => {
   };
 
   const onSubmit = (e) => {
-    setLoading(true);
     e.preventDefault();
   };
 
   return (
     <div style={{ width: "30%", margin: "auto" }}>
-      <h2>{isSignup ? "Signup" : "Login"}</h2>
+      <h2 style={{ margin: "0 40%" }}>{isSignup ? "Signup" : "Login"}</h2>
       <Form onSubmit={onSubmit} noValidate className={loading ? "loading" : ""}>
         <Form.Input
           label="Email"
@@ -45,20 +44,27 @@ const Auth = () => {
           error={errors.password}
           type="password"
         />
-        <Button
-          style={{ float: "right" }}
-          type="submit"
-          inverted
-          color="green"
-          disabled={loading}
-          loading={loading}
-        >
-          {isSignup ? "Signup" : "Login"}
-        </Button>
+        <Button.Group style={{ float: "right" }}>
+          <Button
+            type="button"
+            color="red"
+            disabled={loading}
+            onClick={changeMode}
+          >
+            {isSignup ? "Switch to Login" : "Switch to Signup"}
+          </Button>
+          <Button.Or />
+          <Button type="submit" inverted color="green" disabled={loading}>
+            {isSignup
+              ? loading
+                ? "Signing up.."
+                : "Signup"
+              : loading
+              ? "Logging in.."
+              : "Login"}
+          </Button>
+        </Button.Group>
       </Form>
-      <Button inverted color="red" onClick={changeMode}>
-        {isSignup ? "Switch to Login" : "Switch to Signup"}
-      </Button>
       {/* {errors.general && errors.general.length > 1 && (
         <div className="ui error message">{errors.general}</div>
       )} */}
