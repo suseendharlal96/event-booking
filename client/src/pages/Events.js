@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
-import { Button, Card } from "semantic-ui-react";
+import { Button, Card, Transition } from "semantic-ui-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -90,40 +90,42 @@ const Events = (props) => {
         submit={(data) => createEvent(data)}
         close={() => showModal(false)}
       />
-      {events && events.length ? (
-        events.map((event, index) => (
-          <Card fluid key={index}>
-            <Card.Content>
-              {/* <Image floated="right" size="mini" src={Profile} /> */}
-              <Card.Header>Event Name: {event.title}</Card.Header>
-              <Card.Meta>
-                <strong>Date:</strong>
-                {dayjs(event.date).format("DD-MMM-YYYY")}(
-                {dayjs(event.date).fromNow()})
-              </Card.Meta>
-              <Card.Meta>
-                <strong>
-                  Amount to register:
-                  {"\u20B9"} {event.price}
-                </strong>
-              </Card.Meta>
-              <Card.Description>
-                <strong>
-                  About event:
-                  {event.description}
-                </strong>
-              </Card.Description>
-              {userId && userId !== event.creator._id && (
-                <Button style={{ float: "right" }} inverted color="brown">
-                  Book Event
-                </Button>
-              )}
-            </Card.Content>
-          </Card>
-        ))
-      ) : (
-        <EventSkeleton />
-      )}
+      <Transition.Group animation="vertical flip" duration="600">
+        {events && events.length ? (
+          events.map((event, index) => (
+            <Card fluid key={index}>
+              <Card.Content>
+                {/* <Image floated="right" size="mini" src={Profile} /> */}
+                <Card.Header>Event Name: {event.title}</Card.Header>
+                <Card.Meta>
+                  <strong>Date:</strong>
+                  {dayjs(event.date).format("DD-MMM-YYYY")}(
+                  {dayjs(event.date).fromNow()})
+                </Card.Meta>
+                <Card.Meta>
+                  <strong>
+                    Amount to register:
+                    {"\u20B9"} {event.price}
+                  </strong>
+                </Card.Meta>
+                <Card.Description>
+                  <strong>
+                    About event:
+                    {event.description}
+                  </strong>
+                </Card.Description>
+                {userId && userId !== event.creator._id && (
+                  <Button style={{ float: "right" }} inverted color="brown">
+                    Book Event
+                  </Button>
+                )}
+              </Card.Content>
+            </Card>
+          ))
+        ) : (
+          <EventSkeleton />
+        )}
+      </Transition.Group>
     </div>
   );
 };

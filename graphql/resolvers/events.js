@@ -7,7 +7,7 @@ exports.EventResolver = {
   // Query
   events: async () => {
     try {
-      const events = await Event.find().sort({ date: "desc" });
+      const events = await Event.find().sort({ date: "asc" });
       return events.map((event) => {
         return transformEvent(event);
       });
