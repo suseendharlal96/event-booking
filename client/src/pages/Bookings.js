@@ -1,6 +1,14 @@
-import React from "react";
+import React, { useEffect, useContext } from "react";
 
-const Bookings = () => {
+import { AuthContext } from "../context/authcontext";
+
+const Bookings = (props) => {
+  const { token } = useContext(AuthContext);
+  useEffect(() => {
+    if (!token) {
+      props.history.push("/authenticate");
+    }
+  }, []);
   return <div>Bookings</div>;
 };
 export default Bookings;
