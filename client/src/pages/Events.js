@@ -13,9 +13,11 @@ const Events = (props) => {
   dayjs.extend(relativeTime);
   const { token, userId } = useContext(AuthContext);
   const [modal, showModal] = useState(false);
-  const [events, setEvents] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [bookings, setBookings] = useState(null);
   useEffect(() => {
-    console.log(userId);
+    console.log(userId, typeof userId);
+    console.log(token);
     getEvents();
   }, [props]);
 
@@ -31,10 +33,12 @@ const Events = (props) => {
       query: `
             query{
               events{
+                _id
                 title
                 description
                 date
                 price
+                bookedBy
                 creator{
                   email
                   _id
@@ -59,13 +63,135 @@ const Events = (props) => {
       })
       .then((res) => {
         console.log(res);
-        if (res && res.data) {
+        if (res && res.data.events && res.data.events.length) {
           setEvents(res.data.events);
+          if (userId && token) {
+            getBookings();
+          }
         }
       })
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  const getBookings = () => {
+    const reqBody = {
+      query: `
+              query{
+                bookings{
+                  _id
+                  event{
+                    _id
+                    bookedBy
+                  }
+                  user{
+                    _id
+                  }
+                }
+              }
+              `,
+    };
+    fetch("http://localhost:4000/graphql", {
+      method: "POST",
+      body: JSON.stringify(reqBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          // setLoading(false);
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((res) => {
+        console.log(res);
+        if (res && res.data) {
+          setBookings(res.data.bookings);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const bookEvent = (eventId) => {
+    console.log(eventId.toString());
+    const reqBody = {
+      query: `
+            mutation{
+              bookEvent(eventId:"${eventId}"){
+               createdAt
+               event{
+                 _id
+               }
+              }
+            }
+            `,
+    };
+    fetch("http://localhost:4000/graphql", {
+      method: "POST",
+      body: JSON.stringify(reqBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          // setLoading(false);
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((res) => {
+        console.log(res);
+        if (res && res.data) {
+          getEvents();
+          getBookings();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const bookingButton = (event) => {
+    console.log(event);
+    if (bookings && bookings.length) {
+      const a =
+        event.bookedBy && event.bookedBy.findIndex((bId) => bId === userId);
+      const b = bookings.findIndex((bId) => bId.event._id === event._id);
+      console.log(a);
+      console.log(b);
+    }
+    return (
+      <React.Fragment>
+        {userId && userId !== event.creator._id ? (
+          bookings &&
+          bookings.length &&
+          event.bookedBy &&
+          event.bookedBy.findIndex((bId) => bId === userId) >= 0 &&
+          bookings.findIndex((bId) => bId.event._id === event._id) >= 0 ? (
+            <Button style={{ float: "right" }} inverted color="green">
+              Event Booked
+            </Button>
+          ) : (
+            <Button
+              onClick={() => bookEvent(event._id)}
+              style={{ float: "right" }}
+              inverted
+              color="brown"
+            >
+              Book Event
+            </Button>
+          )
+        ) : null}
+      </React.Fragment>
+    );
   };
 
   return (
@@ -91,37 +217,37 @@ const Events = (props) => {
         close={() => showModal(false)}
       />
       <Transition.Group animation="vertical flip" duration="600">
-        {events && events.length ? (
-          events.map((event, index) => (
-            <Card fluid key={index}>
-              <Card.Content>
-                {/* <Image floated="right" size="mini" src={Profile} /> */}
-                <Card.Header>Event Name: {event.title}</Card.Header>
-                <Card.Meta>
-                  <strong>Date:</strong>
-                  {dayjs(event.date).format("DD-MMM-YYYY")}(
-                  {dayjs(event.date).fromNow()})
-                </Card.Meta>
-                <Card.Meta>
-                  <strong>
-                    Amount to register:
-                    {"\u20B9"} {event.price}
-                  </strong>
-                </Card.Meta>
-                <Card.Description>
-                  <strong>
-                    About event:
-                    {event.description}
-                  </strong>
-                </Card.Description>
-                {userId && userId !== event.creator._id && (
-                  <Button style={{ float: "right" }} inverted color="brown">
-                    Book Event
-                  </Button>
-                )}
-              </Card.Content>
-            </Card>
-          ))
+        {events ? (
+          events.length ? (
+            events.map((event, index) => (
+              <Card fluid key={index}>
+                <Card.Content>
+                  {/* <Image floated="right" size="mini" src={Profile} /> */}
+                  <Card.Header>Event Name: {event.title}</Card.Header>
+                  <Card.Meta>
+                    <strong>Date:</strong>
+                    {dayjs(event.date).format("DD-MMM-YYYY")}(
+                    {dayjs(event.date).fromNow()})
+                  </Card.Meta>
+                  <Card.Meta>
+                    <strong>
+                      Amount to register:
+                      {"\u20B9"} {event.price}
+                    </strong>
+                  </Card.Meta>
+                  <Card.Description>
+                    <strong>
+                      About event:
+                      {event.description}
+                    </strong>
+                  </Card.Description>
+                  {bookingButton(event)}
+                </Card.Content>
+              </Card>
+            ))
+          ) : (
+            <p>No events found</p>
+          )
         ) : (
           <EventSkeleton />
         )}

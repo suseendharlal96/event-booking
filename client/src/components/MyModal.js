@@ -24,12 +24,6 @@ const MyModal = (props) => {
 
   const onChangeInput = (e) => {
     setPost({ ...post, [e.target.name]: e.target.value });
-    // if (post.price <= 0) {
-    //   setErrors({ ...errors, price: "Must be greater than 0" });
-    // }
-    // if (new Date(post.date).getMinutes - new Date().getMinutes < 0) {
-    //   setErrors({ ...errors, date: "Date expired" });
-    // }
   };
 
   const submit = () => {

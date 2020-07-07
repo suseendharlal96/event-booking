@@ -6,7 +6,7 @@ import { Menu } from "semantic-ui-react";
 import { AuthContext } from "../../context/authcontext";
 
 const NavBar = (props) => {
-  const { token, setToken } = useContext(AuthContext);
+  const { token, setToken, email, setUserId } = useContext(AuthContext);
   // const [path, setPath] = useState("");
   // const [activeItem, setActiveItem] = useState(path);
   // useEffect(() => {
@@ -22,6 +22,7 @@ const NavBar = (props) => {
 
   const logout = () => {
     setToken(null);
+    setUserId(null);
   };
 
   const menuContent = (
@@ -31,6 +32,7 @@ const NavBar = (props) => {
           <Menu.Item name="events" as={NavLink} to="/events" />
           <Menu.Item name="bookings" as={NavLink} to="/bookings" />
           <Menu.Menu position="right">
+            <Menu.Item name={`Logged as ${email && email.split("@")[0]}`} />
             <Menu.Item
               name="logout"
               onClick={logout}

@@ -23,6 +23,7 @@ input UserInput{
 }
 
 type LoginData{
+    email:String!
     userId:ID!
     token:String!
     expirationTime:Int!
@@ -35,6 +36,7 @@ type Event {
     price:Float!
     date:String!
     creator: User!
+    bookedBy: [String!]!
 }
 
 input EventInput{

@@ -5,7 +5,7 @@ const { transformEvent } = require("../../util/transformEvent");
 
 const individualEvent = async (eventId) => {
   try {
-    const event = await Event.findById({ _id: eventId });
+    const event = await Event.findOne({ _id: eventId });
     if (!event) {
       throw new Error(`Event with ${eventId} not found `);
     }
@@ -57,16 +57,20 @@ exports.BookingResolver = {
       if (!event) {
         throw new Error("No event");
       }
+      const a = { ...event, bookedBy: event.bookedBy.push(req.userId) };
       const booking = new Booking({
         user: req.userId,
         event,
       });
       const result = await booking.save();
+      const eventResult = await event.save();
+      console.log(eventResult);
+      console.log(result);
       return {
         ...result._doc,
         _id: result.id,
         user: user.bind(this, booking._doc.user),
-        event: individualEvent.bind(this, booking._doc.event),
+        event: individualEvent.bind(this, booking._doc.event.id),
         createdAt: new Date(result._doc.createdAt).toISOString(),
         updatedAt: new Date(result._doc.updatedAt).toISOString(),
       };

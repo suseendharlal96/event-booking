@@ -5,8 +5,7 @@ import { Form, Button } from "semantic-ui-react";
 import { AuthContext } from "../context/authcontext";
 
 const Auth = (props) => {
-  const { setToken } = useContext(AuthContext);
-  const { setUserId } = useContext(AuthContext);
+  const { setToken, setUserId, setEmail } = useContext(AuthContext);
   const [formValue, setFormValue] = useState({
     email: "",
     password: "",
@@ -67,6 +66,7 @@ const Auth = (props) => {
           query: `
           query{
             login(email:"${email}",password:"${password}"){
+              email
               userId
               token
             }
@@ -93,6 +93,7 @@ const Auth = (props) => {
           if (res.data && res.data.login.token) {
             setToken(res.data.login.token);
             setUserId(res.data.login.userId);
+            setEmail(res.data.login.email);
             props.history.push("/events");
           }
           if (res.errors) {
@@ -114,6 +115,7 @@ const Auth = (props) => {
           icon="user"
           loading={loading}
           label="Email"
+          autoFocus
           placeholder="Email.."
           name="email"
           value={formValue.email}

@@ -17,6 +17,7 @@ const eventSchema = new Schema({
     type: Date,
     required: true,
   },
+  bookedBy: [{ type: String }],
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",

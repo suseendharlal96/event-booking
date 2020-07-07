@@ -21,6 +21,7 @@ exports.UserResolver = {
         { expiresIn: "1h" }
       );
       return {
+        email,
         userId: user.id,
         token: jwtToken,
         expirationTime: 1,
