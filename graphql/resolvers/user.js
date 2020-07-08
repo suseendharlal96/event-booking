@@ -9,7 +9,7 @@ exports.UserResolver = {
     try {
       const user = await User.findOne({ email });
       if (!user) {
-        throw new Error("User not found", { general: "fyhyu" });
+        throw new Error("User not found");
       }
       const passIsEqual = await bcrypt.compare(password, user.password);
       if (!passIsEqual) {

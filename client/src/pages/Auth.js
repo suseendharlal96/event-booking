@@ -82,6 +82,7 @@ const Auth = (props) => {
       })
         .then((res) => {
           if (res.status !== 200 && res.status !== 201) {
+            console.log(res);
             setLoading(false);
             throw new Error("Failed!");
           }
@@ -90,10 +91,16 @@ const Auth = (props) => {
         .then((res) => {
           setLoading(false);
           console.log(res);
-          if (res.data && res.data.login.token) {
-            setToken(res.data.login.token);
-            setUserId(res.data.login.userId);
-            setEmail(res.data.login.email);
+          if (res.data) {
+            if (res.data.login) {
+              setToken(res.data.login.token);
+              setUserId(res.data.login.userId);
+              setEmail(res.data.login.email);
+            }
+            if (res.data.createUser) {
+              setUserId(res.data.createUser._id);
+              setEmail(res.data.createUser.email);
+            }
             props.history.push("/events");
           }
           if (res.errors) {

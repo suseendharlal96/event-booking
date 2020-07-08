@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
-import { Button, Card, Transition } from "semantic-ui-react";
+import { Button, Card, Transition, Checkbox } from "semantic-ui-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -13,7 +13,9 @@ const Events = (props) => {
   dayjs.extend(relativeTime);
   const { token, userId } = useContext(AuthContext);
   const [modal, showModal] = useState(false);
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(null);
+  const [actualEvents, setActualEvents] = useState([]);
+  const [userEvents, setUserEvents] = useState(false);
   const [bookings, setBookings] = useState(null);
   useEffect(() => {
     console.log(userId, typeof userId);
@@ -65,7 +67,8 @@ const Events = (props) => {
         console.log(res);
         if (res && res.data.events && res.data.events.length) {
           setEvents(res.data.events);
-          if (userId && token) {
+          setActualEvents(res.data.events);
+          if (userId) {
             getBookings();
           }
         }
@@ -159,6 +162,17 @@ const Events = (props) => {
       });
   };
 
+  const toggleEvents = (e) => {
+    console.log("sd", e);
+    setUserEvents(!userEvents);
+    const a = [...actualEvents];
+    if (!userEvents) {
+      setEvents(a.filter((user) => user.creator._id === userId));
+    } else {
+      setEvents(a);
+    }
+  };
+
   const bookingButton = (event) => {
     console.log(event);
     if (bookings && bookings.length) {
@@ -196,7 +210,7 @@ const Events = (props) => {
 
   return (
     <div>
-      {token ? (
+      {userId ? (
         <Button primary onClick={() => showModal(true)}>
           Create Event
         </Button>
@@ -209,6 +223,17 @@ const Events = (props) => {
         >
           Create Event
         </Button>
+      )}
+      {userId && (
+        <span style={{ float: "right" }}>
+          All Events
+          <Checkbox
+            style={{ margin: "10px 5px 0px 5px" }}
+            onChange={toggleEvents}
+            toggle
+          />
+          Your Events
+        </span>
       )}
       {!token && <h2>Login to create/book an event!</h2>}
       <MyModal

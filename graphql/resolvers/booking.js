@@ -24,10 +24,8 @@ exports.BookingResolver = {
     }
     try {
       const bookings = await Booking.find();
-      // console.log(bookings);
       if (bookings) {
         return bookings.map((booking) => {
-          console.log(1, booking);
           return {
             ...booking._doc,
             _id: booking._doc._id,
@@ -53,19 +51,17 @@ exports.BookingResolver = {
     }
     try {
       const event = await Event.findById({ _id: eventId });
+      const a = { ...event, bookedBy: event.bookedBy.push(req.userId) };
       console.log("e", event);
       if (!event) {
         throw new Error("No event");
       }
-      const a = { ...event, bookedBy: event.bookedBy.push(req.userId) };
       const booking = new Booking({
         user: req.userId,
         event,
       });
       const result = await booking.save();
-      const eventResult = await event.save();
-      console.log(eventResult);
-      console.log(result);
+      await event.save();
       return {
         ...result._doc,
         _id: result.id,
@@ -80,7 +76,7 @@ exports.BookingResolver = {
     }
   },
 
-  cancelBooking: async ({ bookingId }, req) => {
+  cancelBooking: async ({ bookingId, eventId }, req) => {
     if (!req.isAuth) {
       throw new Error("Unauthenticated to perform this operation");
     }
@@ -88,8 +84,10 @@ exports.BookingResolver = {
       const booking = await Booking.findById({ _id: bookingId }).populate(
         "event"
       );
-      console.log(2, booking);
-      console.log(3, booking.event._doc);
+      const a = await Event.findById(eventId);
+      const bIndex = a.bookedBy.findIndex((evt) => evt === req.userId);
+      a.bookedBy.splice(bIndex, 1);
+      await a.save();
       const event = transformEvent(booking.event);
       await Booking.deleteOne({ _id: bookingId });
       return event;
