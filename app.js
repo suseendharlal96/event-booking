@@ -10,8 +10,6 @@ const isAuth = require("./middleware/auth");
 const app = express();
 app.use(bodyParser.json());
 
-const a = "2020-07-03T07:22:42.041Z";
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");

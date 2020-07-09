@@ -45,9 +45,15 @@ exports.UserResolver = {
           password: hashedPassword,
         });
         const result = await newUser.save();
+        const jwtToken = jwt.sign(
+          { userId: result.id, email: result._doc.email },
+          "verysecretkey",
+          { expiresIn: "1h" }
+        );
         if (result) {
           return {
             ...result._doc,
+            token: jwtToken,
             _id: result.id,
           };
         }

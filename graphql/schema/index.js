@@ -12,6 +12,7 @@ type Booking{
 
 type User{
     _id: ID!
+    token:String!
     email:String!
     password:String
     createdEvents: [Event!]
