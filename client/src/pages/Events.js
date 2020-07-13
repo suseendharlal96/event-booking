@@ -13,10 +13,10 @@ const Events = (props) => {
   dayjs.extend(relativeTime);
   const { token, userId } = useContext(AuthContext);
   const [modal, showModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState(null);
   const [actualEvents, setActualEvents] = useState([]);
   const [userEvents, setUserEvents] = useState(false);
-  const [bookings, setBookings] = useState(null);
   useEffect(() => {
     console.log(userId, typeof userId);
     console.log(token);
@@ -68,52 +68,6 @@ const Events = (props) => {
         if (res && res.data.events && res.data.events.length) {
           setEvents(res.data.events);
           setActualEvents(res.data.events);
-          if (userId) {
-            getBookings();
-          }
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const getBookings = () => {
-    const reqBody = {
-      query: `
-              query{
-                bookings{
-                  _id
-                  event{
-                    _id
-                    bookedBy
-                  }
-                  user{
-                    _id
-                  }
-                }
-              }
-              `,
-    };
-    fetch("http://localhost:4000/graphql", {
-      method: "POST",
-      body: JSON.stringify(reqBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          // setLoading(false);
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((res) => {
-        console.log(res);
-        if (res && res.data) {
-          setBookings(res.data.bookings);
         }
       })
       .catch((err) => {
@@ -122,15 +76,16 @@ const Events = (props) => {
   };
 
   const bookEvent = (eventId) => {
+    setLoading(true);
     console.log(eventId.toString());
     const reqBody = {
       query: `
-            mutation{
+      mutation{
               bookEvent(eventId:"${eventId}"){
-               createdAt
-               event{
+                createdAt
+                event{
                  _id
-               }
+                }
               }
             }
             `,
@@ -144,6 +99,7 @@ const Events = (props) => {
       },
     })
       .then((res) => {
+        setLoading(false);
         if (res.status !== 200 && res.status !== 201) {
           // setLoading(false);
           throw new Error("Failed!");
@@ -151,13 +107,14 @@ const Events = (props) => {
         return res.json();
       })
       .then((res) => {
+        setLoading(false);
         console.log(res);
         if (res && res.data) {
           getEvents();
-          getBookings();
         }
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
       });
   };
@@ -175,21 +132,11 @@ const Events = (props) => {
 
   const bookingButton = (event) => {
     console.log(event);
-    if (bookings && bookings.length) {
-      const a =
-        event.bookedBy && event.bookedBy.findIndex((bId) => bId === userId);
-      const b = bookings.findIndex((bId) => bId.event._id === event._id);
-      console.log(a);
-      console.log(b);
-    }
     return (
       <React.Fragment>
         {userId && userId !== event.creator._id ? (
-          bookings &&
-          bookings.length &&
           event.bookedBy &&
-          event.bookedBy.findIndex((bId) => bId === userId) >= 0 &&
-          bookings.findIndex((bId) => bId.event._id === event._id) >= 0 ? (
+          event.bookedBy.findIndex((bId) => bId === userId) >= 0 ? (
             <Button style={{ float: "right" }} inverted color="green">
               Event Booked
             </Button>
@@ -198,6 +145,8 @@ const Events = (props) => {
               onClick={() => bookEvent(event._id)}
               style={{ float: "right" }}
               inverted
+              loading={loading}
+              disabled={loading}
               color="brown"
             >
               Book Event
@@ -245,7 +194,7 @@ const Events = (props) => {
         {events ? (
           events.length ? (
             events.map((event, index) => (
-              <Card fluid key={index}>
+              <Card fluid key={event._id}>
                 <Card.Content>
                   {/* <Image floated="right" size="mini" src={Profile} /> */}
                   <Card.Header>Event Name: {event.title}</Card.Header>

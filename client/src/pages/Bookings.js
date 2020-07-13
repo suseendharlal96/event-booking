@@ -11,6 +11,7 @@ const Bookings = (props) => {
   dayjs.extend(relativeTime);
   const { token, userId } = useContext(AuthContext);
   const [bookings, setBookings] = useState(null);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!token) {
       props.history.push("/authenticate");
@@ -21,6 +22,7 @@ const Bookings = (props) => {
   }, []);
 
   const cancelBooking = (bookingId, eventId) => {
+    setLoading(true);
     console.log(bookingId);
     console.log(eventId);
     // const bIndex = bookings.findIndex((booking) => booking._id === bookingId);
@@ -50,6 +52,7 @@ const Bookings = (props) => {
       },
     })
       .then((res) => {
+        setLoading(false);
         if (res.status !== 200 && res.status !== 201) {
           // setLoading(false);
           throw new Error("Failed!");
@@ -57,12 +60,14 @@ const Bookings = (props) => {
         return res.json();
       })
       .then((res) => {
+        setLoading(false);
         console.log(res);
         if (res && res.data) {
           getBookings();
         }
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
       });
   };
@@ -122,7 +127,7 @@ const Bookings = (props) => {
             bookings.map((booking, index) => {
               return (
                 booking.user._id === userId && (
-                  <Card fluid key={index}>
+                  <Card fluid key={booking._id}>
                     <Card.Content>
                       {/* <Image floated="right" size="mini" src={Profile} /> */}
                       <Card.Header>
@@ -146,6 +151,8 @@ const Bookings = (props) => {
                         </strong>
                       </Card.Description>
                       <Button
+                        loading={loading}
+                        disabled={loading}
                         style={{ float: "right" }}
                         color="red"
                         onClick={() =>
